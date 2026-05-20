@@ -1,66 +1,42 @@
-# Tiny Tapeout Project Information
 project:
-  title:        "Vedic Tensor MAC Core"
-  description:  "High-speed 8x8 bit Multiply-Accumulate unit utilizing structural Urdhva Tiryagbhyam logic for parallel edge AI acceleration."
+  title:        "Vedic Tensor MAC"
+  description:  "High-speed 8x8 bit Multiply-Accumulate unit using parallel structural Urdhva Tiryagbhyam logic."
   author:       "Joydeep Das (Divine Earthly)"
   language:     "Verilog"
   license:      "MIT"
+  tiles:        "1x1"
+  top_module:   "tt_um_example"
+  source_files:
+    - "project.v"
+    - "vedic_2x2.v"
+    - "vedic_mult_4x4_opt.v"
+    - "vedic_mult_8x8_opt.v"
+    - "vedic_mac.v"
 
-# Detailed documentation for the automatically generated datasheet
-documentation:
-  how_it_works: |
-    This design implements an 8-bit hardware Multiply-Accumulate (MAC) unit optimized for tensor arithmetic. 
-    It replaces standard sequential Booth/Wallace multiplier architectures with a purely structural 
-    hierarchical execution grid based on the Vedic mathematics sutra 'Urdhva Tiryagbhyam' (Vertically and Crosswise).
-    
-    The internal multiplier scales recursively: four 2x2 bit pure gate-level matrices feed parallel 
-    4x4 bit blocks, which are combined into an 8x8 core via a balanced adder tree optimization. This 
-    flattens the critical path delay. The resulting 16-bit product is sequentially accumulated into an 
-    internal 16-bit tracking register on every clock cycle when the clock enable (ena) pin is held high.
-  
-  how_to_test: |
-    1. Pulse rst_n low to reset the accumulator register to zero.
-    2. Drive the active-high clock enable (ena) pin high to start processing.
-    3. Feed an 8-bit input vector into ui_in. The hardware computes the square of the input vector 
-       via the parallel Vedic matrix array and adds the product to the cumulative sum on the rising edge of clk.
-    4. Read the live 16-bit cumulative result across the output bus simultaneously:
-       - The lower 8 bits are read directly from uo_out.
-       - The upper 8 bits are read directly from uio_out.
-  
-  clock_hz:     25000000       # Target test clock speed (25 MHz base)
-  gds_xyz:      [0, 0, 0]      # Default tile index positioning placeholder
+pinout:
+  ui[0]: "Input Operand vector bit 0"
+  ui[1]: "Input Operand vector bit 1"
+  ui[2]: "Input Operand vector bit 2"
+  ui[3]: "Input Operand vector bit 3"
+  ui[4]: "Input Operand vector bit 4"
+  ui[5]: "Input Operand vector bit 5"
+  ui[6]: "Input Operand vector bit 6"
+  ui[7]: "Input Operand vector bit 7"
+  uo[0]: "Accumulator Output bit 0 (LSB)"
+  uo[1]: "Accumulator Output bit 1"
+  uo[2]: "Accumulator Output bit 2"
+  uo[3]: "Accumulator Output bit 3"
+  uo[4]: "Accumulator Output bit 4"
+  uo[5]: "Accumulator Output bit 5"
+  uo[6]: "Accumulator Output bit 6"
+  uo[7]: "Accumulator Output bit 7"
+  uio[0]: "Accumulator Output bit 8"
+  uio[1]: "Accumulator Output bit 9"
+  uio[2]: "Accumulator Output bit 10"
+  uio[3]: "Accumulator Output bit 11"
+  uio[4]: "Accumulator Output bit 12"
+  uio[5]: "Accumulator Output bit 13"
+  uio[6]: "Accumulator Output bit 14"
+  uio[7]: "Accumulator Output bit 15 (MSB)"
 
-# Physical Pin Mapping (Strictly matching the tt_um_vedic_mac instantiation)
-pins:
-  # Dedicated Input Pins
-  inputs:
-    - "Input Operand bit 0"
-    - "Input Operand bit 1"
-    - "Input Operand bit 2"
-    - "Input Operand bit 3"
-    - "Input Operand bit 4"
-    - "Input Operand bit 5"
-    - "Input Operand bit 6"
-    - "Input Operand bit 7"
-    
-  # Dedicated Output Pins
-  outputs:
-    - "Accumulator Output bit 0 (LSB)"
-    - "Accumulator Output bit 1"
-    - "Accumulator Output bit 2"
-    - "Accumulator Output bit 3"
-    - "Accumulator Output bit 4"
-    - "Accumulator Output bit 5"
-    - "Accumulator Output bit 6"
-    - "Accumulator Output bit 7"
-    
-  # Bidirectional Pins (Configured as outputs to carry the upper data byte)
-  bidirectional:
-    - "Accumulator Output bit 8"
-    - "Accumulator Output bit 9"
-    - "Accumulator Output bit 10"
-    - "Accumulator Output bit 11"
-    - "Accumulator Output bit 12"
-    - "Accumulator Output bit 13"
-    - "Accumulator Output bit 14"
-    - "Accumulator Output bit 15 (MSB)"
+yaml_version: 6
