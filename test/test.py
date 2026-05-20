@@ -1,6 +1,6 @@
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import ClockCycles
+from cocotb.triggers import RisingEdge, FallingEdge
 
 @cocotb.test()
 async def test_project(dut):
@@ -16,37 +16,50 @@ async def test_project(dut):
     dut.ui_in.value = 0
     dut.uio_in.value = 0
     dut.rst_n.value = 0  # Active-low reset
-    await ClockCycles(dut.clk, 5)
+    
+    # Hold reset for 5 full clock cycles
+    for _ in range(5):
+        await RisingEdge(dut.clk)
+        
     dut.rst_n.value = 1  # Release reset
-    await ClockCycles(dut.clk, 2)
+    
+    # Let signals stabilize for 2 cycles
+    for _ in range(2):
+        await RisingEdge(dut.clk)
+
+    # Move to the Falling Edge to safely drive inputs away from the clock boundary
+    await FallingEdge(dut.clk)
 
     # --- TEST CASE 1 ---
     dut._log.info("Executing Test Case 1: Vector Input = 5")
-    # Our core evaluates ui_in * ui_in -> 5 * 5 = 25 (0x0019)
-    dut.ui_in.value = 5
-    await ClockCycles(dut.clk, 1)
+    dut.ui_in.value = 5  # 5 * 5 = 25 (0x0019)
     
-    dut._log.info(f"Hardware Outputs Observed -> Lower Byte: {dut.uo_out.value.integer}, Upper Byte: {dut.uio_out.value.integer}")
+    await RisingEdge(dut.clk)   # Clock edge captures input and updates internal registers
+    await FallingEdge(dut.clk)  # Wait for falling edge to sample outputs safely
+    
+    dut._log.info(f"Outputs -> Lower Byte: {dut.uo_out.value.integer}, Upper Byte: {dut.uio_out.value.integer}")
     assert dut.uo_out.value.integer == 25
     assert dut.uio_out.value.integer == 0
 
     # --- TEST CASE 2 ---
     dut._log.info("Executing Test Case 2: Vector Input = 12")
-    # Our core evaluates 12 * 12 = 144. Cumulative Accumulation: 25 + 144 = 169 (0x00A9)
-    dut.ui_in.value = 12
-    await ClockCycles(dut.clk, 1)
+    dut.ui_in.value = 12  # 12 * 12 = 144 -> Accumulator: 25 + 144 = 169 (0x00A9)
     
-    dut._log.info(f"Hardware Outputs Observed -> Lower Byte: {dut.uo_out.value.integer}, Upper Byte: {dut.uio_out.value.integer}")
+    await RisingEdge(dut.clk)
+    await FallingEdge(dut.clk)
+    
+    dut._log.info(f"Outputs -> Lower Byte: {dut.uo_out.value.integer}, Upper Byte: {dut.uio_out.value.integer}")
     assert dut.uo_out.value.integer == 169
     assert dut.uio_out.value.integer == 0
 
     # --- TEST CASE 3 ---
-    dut._log.info("Executing Test Case 3: Overflow Verification Loop")
-    # Forcing accumulation to scale past 8-bit boundaries to test upper-byte streaming
-    dut.ui_in.value = 20 # 20 * 20 = 400. Cumulative Accumulation: 169 + 400 = 569 (0x0239)
-    await ClockCycles(dut.clk, 1)
+    dut._log.info("Executing Test Case 3: Upper-Byte Overflow Verification")
+    dut.ui_in.value = 20  # 20 * 20 = 400 -> Accumulator: 169 + 400 = 569 (0x0239)
     
-    dut._log.info(f"Hardware Outputs Observed -> Lower Byte: {dut.uo_out.value.integer}, Upper Byte: {dut.uio_out.value.integer}")
+    await RisingEdge(dut.clk)
+    await FallingEdge(dut.clk)
+    
+    dut._log.info(f"Outputs -> Lower Byte: {dut.uo_out.value.integer}, Upper Byte: {dut.uio_out.value.integer}")
     # 569 in hex is 0x0239 -> Upper Byte = 0x02 (2), Lower Byte = 0x39 (57)
     assert dut.uo_out.value.integer == 57
     assert dut.uio_out.value.integer == 2
