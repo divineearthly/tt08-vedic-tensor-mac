@@ -1,6 +1,6 @@
 `default_nettype none
 
-module tt_um_example (
+module tt_um_divineearthly_vedic_mac (
     input  wire [7:0] ui_in,    // Dedicated inputs: Operand A/B vector [7:0]
     output wire [7:0] uo_out,   // Dedicated outputs: Accumulator Lower Byte [7:0]
     input  wire [7:0] uio_in,   // IOs: Input path
@@ -19,7 +19,7 @@ module tt_um_example (
     assign uo_out  = master_accum[7:0];
     assign uio_out = master_accum[15:8];
 
-    // Instantiate your 26-gate-depth Vedic MAC core cleanly
+    // Instantiate your 26-gate-depth Vedic MAC core
     vedic_mac native_mac (
         .clk(clk),
         .rst(sys_rst),
