@@ -19,7 +19,7 @@ module tt_um_example (
     assign uo_out  = master_accum[7:0];
     assign uio_out = master_accum[15:8];
 
-    // Instantiate your 26-gate-depth Vedic MAC core
+    // Instantiate your 26-gate-depth Vedic MAC core cleanly
     vedic_mac native_mac (
         .clk(clk),
         .rst(sys_rst),
